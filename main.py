@@ -1,26 +1,41 @@
 import re
-import os
 import csv
 import requests
 from bs4 import BeautifulSoup
 
 
 base_url = "https://books.toscrape.com/"
-base_url_category = "https://books.toscrape.com/catalogue/"
+base_url_category = base_url+"catalogue/"
+en_tete = [
+    "product_page_url",
+    "universal_product_code", 
+    "title", 
+    "price_including_tax", 
+    "price_excluding_tax",
+    "number_available",
+    "product_description",
+    "category",
+    "review_rating",
+    "image_url"]
 
-# Fonction renvoyant un soup en fonctioin de l'url donné
 def sibling_url(url):
+    """Fonction envoyant une requête à une url passée en argument à la fonction avec requests, vérifie que la requête aboutie 
+    avec une valeur de status code qui doit être a [200]. Ainsi nous poouvons Analyser la page html récupéré et l'a transormez 
+    en un objet BeautifulSoup que nous allons retourner """
     response = requests.get(url)
-    page = response.content
+    if response.status_code == 200:
+        page = response.content
+    else:
+        print(f"Erreur lors de la récupération de la page : {response.status_code}")
+   
     return BeautifulSoup(page, "html.parser")
-# Fonction extrayant les données du livre
-def extraire(url_book_in_category):
-    global base_url
 
+def extract(book_url):
+    """ Fonction avec en argument l'url d'un livre qui vas intégrer à la liste datas """
     datas = []
-    soup = sibling_url((url_book_in_category))
+    soup = sibling_url(book_url)
     # Ajoute l'url de la page du livre à la lliste datas
-    datas.append(url_book_in_category)
+    datas.append(book_url)
     # Ajoute l'UPC du livre à la liste datas
     universal_product_code = soup.find("table", class_="table table-striped").find("td").string
     datas.append(universal_product_code)
@@ -56,12 +71,11 @@ def extraire(url_book_in_category):
     datas.append(image_url)
     #  Télécharge et enregistre l'image du livre
     title_clean = re.sub(r'[\\/*?:"<>|]', "", title)
-    name_file = title_clean + ".jpg"
+    name_file = "images/"+ category + "/" + title_clean + ".jpg"
     response = requests.get(image_url)
     with open(name_file, "wb") as picture_file:
         picture_file.write(response.content)
     return datas
-
 
 # fonction permettant de récupéré un nombre a partir du dictionnaire en se servant de la variable evaluation_avis
 def rating_number(evaluation_avis):
@@ -69,9 +83,9 @@ def rating_number(evaluation_avis):
     if evaluation_avis.capitalize() in rating_list:
         return rating_list[evaluation_avis]
 # Ecris sur le fichiers csv les données  
-def charger(datas):
+def charger(file_name, datas):
     
-    with open("data.csv", "a", newline="", encoding="utf-8") as fichier_csv:
+    with open(file_name, "a", newline="", encoding="utf-8") as fichier_csv:
         writer = csv.writer(fichier_csv, delimiter=',')
         writer.writerow(datas)
         
@@ -100,41 +114,38 @@ def url_book_category_page(url_category):
 def extractions_categories(url_main):
     soup = sibling_url(url_main)
     categories = soup.find("ul", class_="nav nav-list").find_all("a")[1:]
-    url_categories = [base_url + "/".join(category["href"].split("/")[:-1]) for category in categories]
+    url_categories = {}
+    urls = []
+    names = []
+    for category in categories :
+        urls.append(base_url + "/".join(category["href"].split("/")[:-1]))
+        names.append("".join(category.string.split()))
+    url_categories.update({url: name for url, name in zip(urls, names)})
+    print(url_categories)
+        
     return url_categories
 
 if __name__ == "__main__" : 
-    # appelle la fonction pour extraire les urls des catégories
+    # appelle la fonction pour extrait les urls des catégories
     url_categories = extractions_categories(base_url)
     # Pour chaque url des catégories appliquent le chargement de l'en tête 
-    for url_category in url_categories:
-        en_tete = [
-    "product_page_url",
-    "universal_product_code", 
-    "title", 
-    "price_including_tax", 
-    "price_excluding_tax",
-    "number_available",
-    "product_description",
-    "category",
-    "review_rating",
-    "image_url"]
-        charger(en_tete)
+    for url_category, name in url_categories.items():
+        print(name)
+        file_name = "datas/" + name + ".csv"
+        charger(file_name, en_tete)
         # Pour chaque url des catégories, récupère les urls de chaque livre de la catégorie et si il y' a plusieurs pages les parcours   
         url_books_in_category = url_book_category_page(url_category)
         # Parcours la liste des liens de page de livre, 
-        for url_book_in_category in url_books_in_category:
-            print(url_book_in_category)    
+        for book_url in url_books_in_category:
+            print(book_url)    
             # Chaque lien de page livre est chargé dans la fonction extrayant les données du livre 
-            datas = extraire(url_book_in_category)
+            datas = extract(book_url)
             # appelle de la fonction, pour écrire les données dans un  fichier csv
-            charger(datas)
+            charger(file_name,datas)
         # Une fois toute les données des livres de la même catégorie écrit dans le fichier csv le renomme par sa catégorie
-        older_name = "data.csv"
-        new_name = datas[7] + ".csv"
-        os.rename(older_name, new_name)     
+    
   
-            # etl(url_book_in_category) 
+            # etl(book_url) 
 
 
     
