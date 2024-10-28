@@ -56,7 +56,17 @@ Ce script Python permet de parcourir les catégories du site [https://books.tosc
 
    python main.py book https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html
 
-## Sortie
-  Les fichiers CSV sont enregistrés dans le dossier book_datas avec les informations des livres pour chaque catégorie.
-  Les images sont téléchargées dans des sous-dossiers du dossier images, organisées par catégorie.
+## Structure des dossiers de sortie.
 
+Les fichiers CSV sont enregistrés dans le dossier book_datas (créé automatiquement) avec les informations des livres pour chaque catégorie.
+Les images sont téléchargées dans des sous-dossiers du dossier images, organisées par catégorie.
+
+## Exemple de sortie.
+
+Après l'exécution du script pour une catégorie, vous trouverez :
+
+Un fichier CSV nommé science.csv dans le dossier book_datas contenant toutes les informations des livres de cette catégorie.
+Les images des livres dans le dossier images/science/, avec le titre des livres comme nom de fichier.
+
+## Auteurs
+97jay122
