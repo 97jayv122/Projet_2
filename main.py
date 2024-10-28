@@ -6,6 +6,7 @@ datas et télécharge les images des livres dans le dossier catégorie
 qui est associer dans un dossier images."""
 import re
 import os
+import sys
 import csv
 import requests
 from bs4 import BeautifulSoup
@@ -43,6 +44,10 @@ def sibling_url(url):
     else:
         print(f"Erreur lors de la récupération de la page : {response.status_code}")
         return None
+def folder_rename(folder_name):
+        # Pour chaque url des catégories appliquent le chargement de l'en tête en
+        # lui attribuant le nom de la catégorie.
+        return "book_datas/" + folder_name + ".csv"
 def directory(folder):
     """Vérifie si le dossier existe ou le créer."""
     if not os.path.exists(folder):
@@ -87,7 +92,7 @@ def extract(book):
     rating_stars = soup.find("p" ,class_="star-rating").get("class")[1]
     review_rating = rating_number(rating_stars)
     datas.append(review_rating)
-    # Vérifie l'existance du chemin du dossier sinon le crée,
+    # Vérifie l'existence du chemin du dossier sinon le crée,
     directory(DOSSIER)
     category_name = "book_datas/" + category + ".csv"
     load(category_name, datas)
@@ -96,7 +101,7 @@ def extract(book):
     image_url = BASE_URL + image_url
     datas.append(image_url)
     dossier_image = "images/"+ category + "/"
-    # Vérifie l'existance du chemin du dossier sinon le crée
+    # Vérifie l'existence du chemin du dossier sinon le crée
     directory(dossier_image)
     # Retire les caractères spéciaux pouvant bloquer l'écriture du nom du fichier
     # et limite le nombre de caractère
@@ -156,19 +161,51 @@ def extract_categories(url_main):
     url_categories.update({url: name for url, name in zip(urls, names)})
     return url_categories
 if __name__ == "__main__" :
-    # Vérifie l'existance du chemin du dossier sinon le crée,
-    directory(DOSSIER)
-    # appelle la fonction pour extrait les urls des catégories et les noms des catégories
-    url_from_categories = extract_categories(BASE_URL)
-    for url_from_category, name in url_from_categories.items():
-         # Pour chaque url des catégories appliquent le chargement de l'en tête en
-         # lui attribuant le nom de la catégorie.
-        file_csv_name = "book_datas/" + name + ".csv"
-        load(file_csv_name, en_tete, write_header=True)
-        # Pour chaque url des catégories, récupère les urls de chaque livre de la catégorie et si il
-        # y' a plusieurs pages les parcours.
-        url_books_from_category = url_book_category_page(url_from_category)
-        # Parcours la liste des liens de page de livre.
-        for book_url in url_books_from_category:
-            # Chaque lien de page livre est chargé dans la fonction extrayant les données du livre.
-            extract(book_url)
+    # Vérifie si des arguments sont passés à l'èxécution et éxécute le script par défaut
+    if len(sys.argv) < 2:
+        print("l'extraction des données pour chaque catégorie du site books to scrape est en cours.")
+        print("Écriture des données dans un fichier csv au nom de la catégorie dans le dossier book_datas")
+        print("Enregistrement des images dans le sous-dossier d' images aux noms de leur catégorie")
+        # Vérifie l'existence du chemin du dossier sinon le crée.
+        directory(DOSSIER)
+        # appelle la fonction pour extrait les urls des catégories et les noms des catégories
+        url_from_categories = extract_categories(BASE_URL)
+        for url_from_category, name in url_from_categories.items():
+            file_csv_name = folder_rename(name)
+            load(file_csv_name, en_tete, write_header=True)
+            # Pour chaque url des catégories, récupère les urls de chaque livre de la catégorie et si il
+            # y' a plusieurs pages les parcours.
+            url_books_from_category = url_book_category_page(url_from_category)
+            # Parcours la liste des liens de page de livre.
+            for book_url in url_books_from_category:
+                # Chaque lien de page livre est chargé dans la fonction extrayant les données du livre.
+                extract(book_url)
+        print("Extraction réussite !!")
+    else :
+        # Premier argument définit l'action extraire une catégorie (category) ou un livre (book).
+        action = sys.argv[1]
+        url = sys.argv[2]        
+        match action:
+            case "category":
+                if not url:
+                    print("Vous devez fournir l'url de la catégorie.")
+                    #  Sortie avec érreur 
+                    sys.exit(1)
+                elif "index.html" in url:
+                    print(f"Vous devez retirer index.html de l'url :{url}")
+                    sys.exit(1)
+                directory(DOSSIER)
+                category_name = url.replace(BASE_URL+"catalogue/category/books/","").strip("/")
+                url_books_from_category = url_book_category_page(url)
+                [extract(book_url) for book_url in url_books_from_category]
+                print(f"Données de la catégorie {category_name} extraite dans le dossier book_datas ")
+                print(f"images de la catégorie {category_name} enregistrez dans le dossier images ")
+            case "book":
+                if not url:
+                    print("Vous devez fournir l'url de la catégorie.")
+                    #  Sortie avec érreur 
+                    sys.exit(1)
+                extract(url)
+                print("Données du livre extrait dans book_datas")
+            case _:
+                print(f"Action inconnue : {action}. utilisez category ou book")
