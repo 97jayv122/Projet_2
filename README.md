@@ -31,7 +31,7 @@ et télécharge les images des livres dans le dossier `images`, classées par ca
 
 1. Clonez le dépôt :
 
-   git clone https://github.com/97jay122/Projet_2.git
+   git clone https://github.com/97jay122/Projet_2
    cd main.py
 
 2. Installer les dépendances :
