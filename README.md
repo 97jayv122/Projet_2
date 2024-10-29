@@ -29,14 +29,14 @@ Ce script Python permet de parcourir les catégories du site [https://books.tosc
 ## Installation
 
 1. Clonez le dépôt :
-   ```bash
+   `bash`
    
-   git clone https://github.com/97jayv122/Projet_2.git
-   cd Projet_2
+   `git clone https://github.com/97jayv122/Projet_2.git`
+   `cd Projet_2`
 
 2. Installer les dépendances :
    
-   pip install -r requirements.txt
+   `pip install -r requirements.txt`
 
 ## Utilisation
 ### 1. Extraction de toutes les catégories.
@@ -44,17 +44,17 @@ Ce script Python permet de parcourir les catégories du site [https://books.tosc
    Si vous ne fournissez aucun argument, le script extraira les informations de toutes les catégories et les enregistrera dans des fichiers CSV,
    tout en téléchargeant les images dans des sous-dossiers :
 
-   python main.py
+   `python main.py`
 
 ### 2. Extraction d'une catégorie spécifique.
    Pour extraire les informations d'une catégorie particulière, utilisez la commande suivante (il faut retirer index.html à la fin l'url) :
 
-   python main.py category https://books.toscrape.com/catalogue/category/books/science_22/
+   `python main.py category https://books.toscrape.com/catalogue/category/books/science_22/`
 
 #### 3. Extraction d'un livre spécifique.
    Pour extraire les informations d'un livre en particulier, utilisez la commande suivante :
 
-   python main.py book https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html
+   `python main.py book https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html`
 
 ## Structure des dossiers de sortie.
 
