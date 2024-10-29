@@ -42,12 +42,12 @@ Ce script Python permet de parcourir les catégories du site [https://books.tosc
 ### 1. Extraction de toutes les catégories.
    
    Si vous ne fournissez aucun argument, le script extraira les informations de toutes les catégories et les enregistrera dans des fichiers CSV,
-   tout en téléchargeant les images dans des sous-dossiers :
+   tout en téléchargeant les images dans des sous-dossiers rangé par catégorie dans le dossier images.:
 
    `python main.py`
 
 ### 2. Extraction d'une catégorie spécifique.
-   Pour extraire les informations d'une catégorie particulière, utilisez la commande suivante (il faut retirer index.html à la fin l'url) :
+   Pour extraire les informations d'une catégorie particulière, utilisez la commande suivante :
 
    `python main.py category https://books.toscrape.com/catalogue/category/books/science_22/`
 

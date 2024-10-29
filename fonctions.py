@@ -1,12 +1,13 @@
+""" Fichier contenant les fonctions """
+import csv
 import re
 import os
-import csv
 import requests
 from bs4 import BeautifulSoup
 
 BASE_URL = "https://books.toscrape.com/"
 BASE_URL_CATEGORY = BASE_URL+"catalogue/"
-DOSSIER = "book_datas"
+DOSSIER = "books_datas"
 
 def sibling_url(url):
     """Fonction envoyant une requête HTTP à une url pour récupéré la page html avec requests,
@@ -31,7 +32,7 @@ def sibling_url(url):
 
 def folder_rename(folder_name):
     """ Pour chaque url des catégories appliquent le chargement de l'en tête en
-        lui attribuant le nom de la catégorie.
+        lui attribuant le nom passé en argumant catégorie ou titre.
 
     Args:
         folder_name str: catégorie de livre 
@@ -39,23 +40,39 @@ def folder_rename(folder_name):
     Returns:
        str: Chemin d'accès du fichier CSV
     """
-    return "book_datas/" + folder_name + ".csv"
+    return "books_datas/" + folder_name + ".csv"
 
 def directory(folder):
-    """Vérifie si le dossier existe ou le créer."""
+    """Vérifie si le dossier existe ou le crée."""
     if not os.path.exists(folder):
         os.makedirs(folder)
 
-def save_image(image_name, folder, image_url):
+def clean_title(name):
+    """ Retire les caractères spéciaux qui bloque le renommage du fichier
+
+    Args:
+        name (str): titre du livre brut de l'affichage du site
+
+    Returns:
+       str: titre nettoyé des caractères spéciaux et raccourcis.
+    """
+    return re.sub(r'[\\/*?:"<>|]', "", name)[:100]
+    
+def save_image(title_clean, folder, image_url):
+    """ Fonction enregistrant l'image du livre
+
+    Args:
+        title_clean (str): est le nom du livre 
+        folder (str): chemin du dossier d'enregistrement
+        image_url (str): lien url de l'image à enregistrer
+    """
     # Etablit un chemin cible de dossier en fonction de la catégorie
     dossier_image = "images/"+ folder + "/"
     # Vérifie l'existence du chemin du dossier sinon le crée
     directory(dossier_image)
-    # Retire les caractères spéciaux pouvant bloquer l'écriture du nom du fichier
-    # et limite le nombre de caractère
-    title_clean = re.sub(r'[\\/*?:"<>|]', "", image_name)[:255]
+    # Création de chemin d'accèes avec le nom de l'image
     name_file = "images/"+ folder + "/" + title_clean + ".jpg"
-    # Télécharge et enregistre l'image du livre dans le dossier de sa catégori
+    # Télécharge et enregistre l'image du livre dans le dossier de sa catégorie
     response = requests.get(image_url)
     if response.status_code == 200:
         with open(name_file, "wb") as picture_file:
@@ -64,7 +81,14 @@ def save_image(image_name, folder, image_url):
 def extract(book):
     """Fonction avec en argument l'url d'un livre qui va extraire les infos d'un livre et ajouter
     à la liste datas et télécharger l'image du livre dans le dossier de sa catégorie situé dans
-    le dossier images."""
+    le dossier images.
+
+    Args:
+        book (str): lien url de la page d'un livre
+
+    Returns:
+        liste: liste contenant les informations du livre.
+    """
     datas = []
     soup = sibling_url(book)
     if soup is None:
@@ -91,7 +115,11 @@ def extract(book):
     # Vérifie la présence d'une description et Ajoute la description du livre à la liste datas.
     description = soup.find("p", class_=None)
     if description :
-        datas.append(description.string)
+        # Remplace les virgules et les points virgules par un
+        # espaces pour éviter les érreurs sur le fichier csv
+        description = description.string.replace(","," ")
+        description_clean = description.replace(";"," ")
+        datas.append(description_clean)
     else:
         datas.append("")
     # Ajoute la catégorie du livre à la liste datas
@@ -105,8 +133,7 @@ def extract(book):
     image_url = soup.find("div", class_="carousel-inner").find("img")["src"].strip("./")
     image_url = BASE_URL + image_url
     datas.append(image_url)
-    save_image(title, category, image_url)
-    return datas, category
+    return datas
 
 def rating_number(rating_stars):
     """ Retourne la valeur de la clé de rating_stars qui est une chaîne de caractère,
@@ -116,15 +143,27 @@ def rating_number(rating_stars):
         return rating_list[rating_stars]
 
 def load(file_name, data):
-    """ Ecris sur le fichier csv les données. """
+    """Ecris sur le fichier csv les données. 
+
+    Args:
+        file_name (str): Nom du dossier avec le chemin d'accès au fichier
+        data (liste): données d'un livre
+    """
     with open(file_name, "a", newline="", encoding="utf-8") as fichier_csv:
-        writer = csv.writer(fichier_csv, delimiter=';',quoting=csv.QUOTE_MINIMAL)
+        writer = csv.writer(fichier_csv, delimiter=";")
         writer.writerow(data)
 
 def url_book_category_page(url_category):
-    """ Fonction renvoyant toutes les urls des livres d'une catégorie dans une liste,
+    """Fonction renvoyant toutes les urls des livres d'une catégorie dans une liste,
     si il y'a plusieurs pages les parcours.L a fonction prend en argument le l'url
-    d'une catégorie de livre. """
+    d'une catégorie de livre. 
+
+    Args:
+        url_category (str): lien url d'une catégorie
+
+    Returns:
+        liste: liste contenant les urls des livres d'une catégorie.
+    """
     url_books_of_category = []
     url_pages_books = []
     soup = sibling_url(url_category)
@@ -145,8 +184,15 @@ def url_book_category_page(url_category):
     return url_books_of_category
 
 def extract_categories(url_main):
-    """ Extrait l' url de chaque catégories et le nom de la catégorie dans deux listes distincte 
-    puis fusionné dans un dictionnaire url_categories."""
+    """Extrait l' url de chaque catégories et le nom de la catégorie dans deux listes distincte 
+    puis fusionné dans un dictionnaire url_categories.
+
+    Args:
+        url_main (str): url de la page d'accueil du site books to scrape
+
+    Returns:
+        liste: liste contenant les liens url des catégories.
+    """
     soup = sibling_url(url_main)
     categories = soup.find("ul", class_="nav nav-list").find_all("a")[1:]
     url_categories = {}

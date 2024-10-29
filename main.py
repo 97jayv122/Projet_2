@@ -6,13 +6,10 @@ datas et télécharge les images des livres dans le dossier catégorie
 qui est associer dans un dossier images."""
 import sys
 from fonctions import *
-BASE_URL = "https://books.toscrape.com/"
-BASE_URL_CATEGORY = BASE_URL+"catalogue/"
-DOSSIER = "book_datas"
 en_tete = [
     "product_page_url",
-    "universal_product_code", 
-    "title", 
+    "universal_product_code",
+    "title",
     "price_TT(£)", 
     "price_HT(£)",
     "number_available",
@@ -41,23 +38,33 @@ if __name__ == "__main__" :
             for book_url in url_books_from_category:
                 # Chaque lien de page livre est chargé dans la fonction extrayant les données du livre.
                 datas = extract(book_url)
+                title = clean_title(datas[2])
+                save_image(title, datas[7], datas[9])
                 load(file_csv_name, datas)
         print("Extraction réussite !!")
     else :
         # Premier argument définit l'action extraire une catégorie (category) ou un livre (book).
         action = sys.argv[1]
-             
+
         match action:
+
             case "category":
                 try:
                     url = sys.argv[2]
+
                 except IndexError:
+
                     print("Vous devez fournir l'url de la catégorie.")
-                    #  Sortie avec érreur 
+                    #  Sortie avec érreur.
                     sys.exit(1)
+
                 if "index.html" in url:
+
                     url = url.replace("/index.html","")
+
                 directory(DOSSIER)
+                # permet d'extraire le nom de la catégorie via l'url et la transformer tel que récuperé
+                # dans la page d'un livre pour charger l'en-tête.
                 category_name = url.replace(BASE_URL+"catalogue/category/books/","").strip("/").rstrip("_")
                 category_name = category_name.split("_")[0]
                 category_name = category_name.capitalize()
@@ -65,22 +72,35 @@ if __name__ == "__main__" :
                 load(file_csv_name, en_tete)
                 url_books_from_category = url_book_category_page(url)
                 for book_url in url_books_from_category:
-                   
-                    load(file_csv_name, extract(book_url))
-                print(f"Données de la catégorie {category_name} extraite dans le dossier book_datas ")
-                print(f"images de la catégorie {category_name} enregistrez dans le dossier images ")
+
+                    datas = extract(book_url)
+                    title = clean_title(datas[2])
+                    save_image(title, datas[7], datas[9])
+                    load(file_csv_name, datas)
+
+                print(f"Données de la catégorie {category_name} extraite dans le dossier book_datas.")
+                print(f"Images de la catégorie {category_name} enregistrez dans le dossier images.")
+
             case "book":
+
                 try:
                     url = sys.argv[2]
+
                 except IndexError:
+
                     print("Vous devez fournir l'url de la catégorie.")
-                    #  Sortie avec érreur 
+                    #  Sortie avec érreur.
                     sys.exit(1)
+
                 directory(DOSSIER)
-                datas, category_name = extract(url)
-                file_csv_name = folder_rename(category_name)
+                datas = extract(url)
+                title_book = clean_title(datas[2])
+                file_csv_name = folder_rename(title_book)
                 load(file_csv_name, en_tete)
                 load(file_csv_name, datas)
+                save_image(title_book, datas[7], datas[9])
                 print("Données du livre extrait dans book_datas")
+
             case _:
+
                 print(f"Action inconnue : {action}. utilisez category ou book")
