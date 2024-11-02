@@ -4,10 +4,7 @@ import re
 import os
 import requests
 from bs4 import BeautifulSoup
-
-BASE_URL = "https://books.toscrape.com/"
-BASE_URL_CATEGORY = BASE_URL+"catalogue/"
-DOSSIER = "books_datas"
+from main import BASE_URL, BASE_URL_CATEGORY ,DOSSIER
 
 def sibling_url(url):
     """Fonction envoyant une requête HTTP à une url pour récupéré la page html avec requests,

@@ -23,16 +23,28 @@ Ce script Python permet de parcourir les catégories du site [https://books.tosc
 ## Prérequis
 
 - Python 3.10+
-- `requests` : pour envoyer des requêtes HTTP.
-- `beautifulsoup4` : pour analyser le contenu HTML.
+- [requests](https://pypi.org/project/requests/) : pour envoyer des requêtes HTTP
+- [beautifulsoup4](https://pypi.org/project/beautifulsoup4/) : pour analyser le contenu HTML
 
 ## Installation
 
 1. Clonez le dépôt :
-   `bash`
    
    `git clone https://github.com/97jayv122/Projet_2.git`
+
    `cd Projet_2`
+
+3. Création d'un environnement virtuel :
+
+   `python -m venv env`
+
+      Pour windows:
+
+      `.\env\Scripts\activate`
+
+      Pour mac & Linux:
+
+      `source ./env/bin/activate`
 
 2. Installer les dépendances :
    
@@ -47,11 +59,13 @@ Ce script Python permet de parcourir les catégories du site [https://books.tosc
    `python main.py`
 
 ### 2. Extraction d'une catégorie spécifique.
+
    Pour extraire les informations d'une catégorie particulière, utilisez la commande suivante :
 
    `python main.py category https://books.toscrape.com/catalogue/category/books/science_22/`
 
 #### 3. Extraction d'un livre spécifique.
+
    Pour extraire les informations d'un livre en particulier, utilisez la commande suivante :
 
    `python main.py book https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html`
@@ -69,4 +83,5 @@ Un fichier CSV nommé science.csv dans le dossier book_datas contenant toutes le
 Les images des livres dans le dossier images/science/, avec le titre des livres comme nom de fichier.
 
 ## Auteurs
-97jay122
+
+97jayv122

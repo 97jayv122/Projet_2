@@ -1,11 +1,16 @@
 #!/usr/bin/python
 #-*-coding: utf-8-*-
-""" Script permettant de parcourir les catégories du site https://books.toscrape.com/. 
-D'extraire les informations des livres par catégorie dans un fichier vcs dans un dossier
+"""
+Script pour parcourir les catégories du site https://books.toscrape.com/,
+extraire les informations des livres par catégorie dans un fichier CSV dans un dossier
 datas et télécharge les images des livres dans le dossier catégorie 
-qui est associer dans un dossier images."""
+qui est associer dans un dossier images.
+"""
 import sys
 from fonctions import *
+BASE_URL = "https://books.toscrape.com/"
+BASE_URL_CATEGORY = BASE_URL+"catalogue/"
+DOSSIER = "books_datas"
 en_tete = [
     "product_page_url",
     "universal_product_code",
@@ -22,8 +27,6 @@ if __name__ == "__main__" :
     # Vérifie si des arguments sont passés à l'èxécution et éxécute le script par défaut
     if len(sys.argv) < 2:
         print("l'extraction des données pour chaque catégorie du site books to scrape est en cours.")
-        print("Écriture des données dans un fichier csv au nom de la catégorie dans le dossier book_datas")
-        print("Enregistrement des images dans le sous-dossier d' images aux noms de leur catégorie")
         # Vérifie l'existence du chemin du dossier sinon le crée.
         directory(DOSSIER)
         # appelle la fonction pour extrait les urls des catégories et les noms des catégories
@@ -42,6 +45,8 @@ if __name__ == "__main__" :
                 save_image(title, datas[7], datas[9])
                 load(file_csv_name, datas)
         print("Extraction réussite !!")
+        print("Écriture des données dans un fichier csv au nom de la catégorie dans le dossier book_datas")
+        print("Enregistrement des images dans le sous-dossier d' images aux noms de leur catégorie")
     else :
         # Premier argument définit l'action extraire une catégorie (category) ou un livre (book).
         action = sys.argv[1]
@@ -98,8 +103,9 @@ if __name__ == "__main__" :
                 file_csv_name = folder_rename(title_book)
                 load(file_csv_name, en_tete)
                 load(file_csv_name, datas)
-                save_image(title_book, datas[7], datas[9])
-                print("Données du livre extrait dans book_datas")
+                save_image(title_book, title_book, datas[9])
+                print(f"Données du livre: {title_book} extrait dans book_datas.")
+                print(f"Image du livre: {title_book} enregistré dans le dossier images.")
 
             case _:
 
