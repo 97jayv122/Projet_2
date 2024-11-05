@@ -53,7 +53,7 @@ def clean_title(name):
     Returns:
        str: titre nettoyé des caractères spéciaux et raccourcis.
     """
-    return re.sub(r'[\\/*?:"<>|]', "", name)[:100]
+    return re.sub(r'[\\/*?:"<>|’“”]', "", name)[:100]
     
 def save_image(title_clean, folder, image_url):
     """ Fonction enregistrant l'image du livre
